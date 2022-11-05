@@ -3,24 +3,25 @@
 # @authors	Matus Vrablik (xvrabl05)
 
 CC = gcc
-FLAGS = -g -pedantic -Wall -Wextra -lpcap
+FLAGS = 	-g -pedantic -Wall -Wextra -lpcap
 OTHER_FLAGS = -c
-EXE_FILES = flow
+EXE_FILES = flow 
 ZIP_NAME = xvrabl05
+FILES = f_time.o f_handle.o
 .PHONY: all clean zip
 
-all: flow
+all: flow $(FILES)
 
 # univerzalne pravidlo pre preklad .c suborov na .o
 %.o: %.c
 	$(CC) $(FLAGS) ${OTHER_FLAGS} $<
 
-flow: flow.o
-	$(CC) $(FLAGS) flow.o -o flow
+flow: flow.o $(FILES)
+	$(CC) $(FLAGS) flow.o $(FILES) -o flow
 
 # Commands
 clean:
-	rm -f flow *.o
+	rm -f $(EXE_FILES) *.o
 
 zip:
 	zip $(ZIP_NAME).zip *.c *.h Makefile

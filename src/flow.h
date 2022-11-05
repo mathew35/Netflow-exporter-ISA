@@ -1,6 +1,6 @@
 /**
  * ISA
- * @file flow.h
+ * @file flow.c
  * @authors Matus Vrablik (xvrab05)
  * @brief NetFlow exporter
  */
@@ -9,11 +9,13 @@
 #ifndef FLOW_H
 #define FLOW_H
 
+#include <pcap.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void reprint(char *a) {
-    printf(a);
-}
+#include "f_handle.h"
+#include "f_time.h"
 
 #endif
 /*** Koniec suboru <nazov_suboru>.{c,h} ***/
