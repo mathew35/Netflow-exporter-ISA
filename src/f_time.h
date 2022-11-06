@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-time_t sysTime();
+struct timeval sysTime();
+
+void setLatest(struct timeval time);
+
 #endif
 /*** Koniec suboru f_time.h ***/

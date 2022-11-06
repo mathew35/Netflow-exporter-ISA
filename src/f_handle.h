@@ -40,10 +40,8 @@ typedef struct flow {
     // 48B
     flow_id_t flow_id;
     int dPkts;
-    time_t first;
-    time_t last;
-    uint16_t srcport;
-    uint16_t dstport;
+    struct timeval first;
+    struct timeval last;
     int tcp_flags;
     int prot; // protocol
     int tos;
@@ -51,6 +49,8 @@ typedef struct flow {
 } flow_t;
 
 void initFlowArray();
+
+void freeFlows();
 
 void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size);
 

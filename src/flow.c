@@ -44,7 +44,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     struct udphdr *udphdr;
     struct icmphdr *icmphdr;
     int size_ip = iphdr->ip_hl * 4;
-    flow_ID->length = ntohs(iphdr->ip_len);
+    flow_ID->length = ntohs(iphdr->ip_len) - size_ip;
     switch (iphdr->ip_p) {
         case IPPROTO_TCP:
             tcphdr = (struct tcphdr *)(noHeadPacket + size_ip);
@@ -67,6 +67,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
             break;
     }
     updateFlow(flow_ID);
+    free(flow_ID);
 }
 
 void argparse(int argc, char *argv[argc]) {
@@ -148,6 +149,7 @@ int main(int argc, char *argv[argc]) {
     pcap_loop(packetHandler, -1, got_packet, NULL);
     pcap_close(packetHandler);
     exportFlowAll();
+    freeFlows();
 
     printf("Total packets: %d\n", total_packets);
     return 0;

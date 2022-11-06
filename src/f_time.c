@@ -10,13 +10,14 @@ struct timeval lastTime;
 struct timeval firstTime;
 bool firstSet = false;
 
-time_t sysTime() {
-    return lastTime.tv_sec;
+struct timeval sysTime() {
+    return lastTime;
 }
 
 bool checkExport(time_t time, int limit) {
     if (lastTime.tv_sec - time > limit)
         return true;
+    return false;
 }
 
 void setLatest(struct timeval time) {

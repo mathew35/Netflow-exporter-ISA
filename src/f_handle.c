@@ -20,9 +20,22 @@ int expired_cnt = 0;
 void initFlowArray() {
     flow_cache = malloc(sizeof(flow_t *) * flow_size);
     for (int i = 0; i < flow_size; i++) {
-        flow_cache[i] = malloc(sizeof(flow_t));
+        // flow_cache[i] = malloc(sizeof(flow_t));
     }
     expiredFlows = malloc(sizeof(flow_t *) * 30);
+    for (int i = 0; i < 30; i++) {
+        expiredFlows[i] = malloc(sizeof(flow_t));
+    }
+}
+
+void freeFlows() {
+    if (expiredFlows != NULL) {
+        for (int i = 0; i < 30; i++) {
+            free(expiredFlows[i]);
+        }
+    }
+    free(expiredFlows);
+    // free(flow_cache);
 }
 
 void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size) {
@@ -36,19 +49,20 @@ void exportFlow(flow_t *flow) {
     printf("\n");
     printf("number of packets:%d\n", flow->dPkts);
     printf("Bytes:%d\n", flow->bytes);
-    printf("First time: %s", asctime(gmtime(&flow->first)));
-    printf("Last time: %s", asctime(gmtime(&flow->last)));
-    printf("src port: %u\n", ntohs(flow->srcport));
-    printf("dst port: %u\n", ntohs(flow->dstport));
+    printf("First time: %s", asctime(gmtime(&flow->first.tv_sec)));
+    printf("Last time: %s", asctime(gmtime(&flow->last.tv_sec)));
+    printf("src port: %u\n", ntohs(flow->flow_id.src_port));
+    printf("dst port: %u\n", ntohs(flow->flow_id.dst_port));
     printf("protocol (6 = TCP, 2 = ICMP 17 = UDP): %d\n", flow->prot);
     // flow_t newFlow;
     // *flow = newFlow;
-    flow = NULL;
+    // free(flow);
+    // flow = NULL;
 }
 
 void exportFlowAll() {
     printf("Exporting all flows!\n");
-    for (int i = 1; i <= flow_cnt; i++) {
+    for (int i = 0; i < flow_cnt; i++) {
         printf("\nflow no.%d", i);
         exportFlow(flow_cache[i]);
         free(flow_cache[i]);
@@ -61,14 +75,15 @@ bool flowIDcmp(flow_id_t *f1, flow_id_t *f2) {
         if (strcmp(f1->dst_ip, f2->dst_ip) == 0)
             if (strcmp(f1->src_ip, f2->src_ip) == 0)
                 if (f1->src_port == f2->src_port)
-                    if (f1->dst_port == f2->dst_port) return true;
+                    if (f1->dst_port == f2->dst_port)
+                        if (f1->prot == f2->prot) return true;
     return false;
 }
 
 void updateFlow(flow_id_t *flow_ID) {
     flow_t *flow = NULL;
     int fn = 0;
-    for (int i = 1; i <= flow_cnt; i++) {
+    for (int i = 0; i < flow_cnt; i++) {
         if (flowIDcmp(&flow_cache[i]->flow_id, flow_ID)) {
             flow = flow_cache[i];
             fn = i;
@@ -79,25 +94,24 @@ void updateFlow(flow_id_t *flow_ID) {
         if (flow_cnt == 1024) {
             // exportOldest();
             printf("\nflow_cnt=30!!!!");
-            exportFlow(flow_cache[30]);
-            flow_cache[1024] = NULL; // free?
             flow_cnt--;
+            exportFlow(flow_cache[1023]);
+            free(flow_cache[1023]);
+            flow_cache[flow_cnt] = NULL; // free?
         }
         flow_t *newFlow = malloc(sizeof(flow_t));
         newFlow->flow_id = *flow_ID;
         newFlow->dPkts = 1;
-        newFlow->first = flow_ID->ts.tv_sec;
+        newFlow->first = flow_ID->ts;
         newFlow->last = newFlow->first;
-        newFlow->srcport = flow_ID->src_port;
-        newFlow->dstport = flow_ID->dst_port;
         newFlow->prot = flow_ID->prot;
         newFlow->bytes = flow_ID->length;
-        flow_cnt++;
         flow_cache[flow_cnt] = newFlow;
+        flow_cnt++;
         return;
     }
 
-    if (flow_ID->ts.tv_sec - flow->first > active) {
+    if (flow_ID->ts.tv_usec - flow->first.tv_usec > active * 1000000) {
         exportFlow(flow_cache[fn]);
         free(flow_cache[fn]);
         flow_cache[fn] = flow_cache[flow_cnt];
@@ -107,7 +121,7 @@ void updateFlow(flow_id_t *flow_ID) {
         return;
     }
 
-    if (sysTime() - flow->last > export) {
+    if (sysTime().tv_usec - flow->last.tv_usec > export * 1000000) {
         exportFlow(flow_cache[fn]);
         free(flow_cache[fn]);
         flow_cache[fn] = flow_cache[flow_cnt];
@@ -118,7 +132,7 @@ void updateFlow(flow_id_t *flow_ID) {
     }
     flow->bytes += flow_ID->length;
     flow->dPkts++;
-    flow->last = flow_ID->ts.tv_sec;
+    flow->last = flow_ID->ts;
     setLatest(flow_ID->ts);
 }
 
