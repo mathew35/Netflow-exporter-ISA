@@ -18,5 +18,10 @@ struct timeval sysTime();
 
 void setLatest(struct timeval time);
 
+void setFirst(struct timeval time);
+
+time_t sysUptime();
+
+bool timecmp(struct timeval t1, struct timeval t2, int sec);
 #endif
 /*** Koniec suboru f_time.h ***/

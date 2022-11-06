@@ -30,5 +30,11 @@ void setFirst(struct timeval time) {
         firstSet = true;
     }
 }
+time_t sysUptime() {
+    return ((lastTime.tv_sec - firstTime.tv_sec) * 1000) + (lastTime.tv_usec - firstTime.tv_usec) / 1000;
+}
+bool timecmp(struct timeval t1, struct timeval t2, int sec) {
+    return ((t1.tv_sec - t2.tv_sec) * 1000 + (t1.tv_usec - t2.tv_usec) / 1000) > sec * 1000;
+}
 
 /*** Koniec suboru f_time.c ***/

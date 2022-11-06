@@ -36,8 +36,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
     struct ip *iphdr;
     iphdr = (struct ip *)(packet + header_length);
-    strcpy(flow_ID->src_ip, inet_ntoa(iphdr->ip_src));
-    strcpy(flow_ID->dst_ip, inet_ntoa(iphdr->ip_dst));
+    flow_ID->src_ip = ntohl(iphdr->ip_src.s_addr);
+    flow_ID->dst_ip = ntohl(iphdr->ip_dst.s_addr);
     flow_ID->prot = iphdr->ip_p;
 
     struct tcphdr *tcphdr;
@@ -48,8 +48,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     switch (iphdr->ip_p) {
         case IPPROTO_TCP:
             tcphdr = (struct tcphdr *)(noHeadPacket + size_ip);
-            flow_ID->src_port = tcphdr->source;
-            flow_ID->dst_port = tcphdr->dest;
+            flow_ID->src_port = tcphdr->th_sport;
+            flow_ID->dst_port = tcphdr->th_dport;
             flow_ID->tcp_flags = tcphdr->th_flags;
             break;
 

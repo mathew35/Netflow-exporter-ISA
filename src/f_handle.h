@@ -25,9 +25,11 @@
 #include "f_time.h"
 
 typedef struct flow_id {
-    char src_ip[256];
+    // char src_ip[256];
+    uint32_t src_ip;
     uint16_t src_port;
-    char dst_ip[256];
+    // char dst_ip[256];
+    uint32_t dst_ip;
     uint16_t dst_port;
     int prot;
     // aditional variables for completness of flow
@@ -43,7 +45,6 @@ typedef struct flow {
     struct timeval first;
     struct timeval last;
     int tcp_flags;
-    int prot; // protocol
     int tos;
     int bytes;
 } flow_t;
