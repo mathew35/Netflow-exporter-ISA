@@ -30,11 +30,24 @@ void setFirst(struct timeval time) {
         firstSet = true;
     }
 }
-time_t sysUptime() {
-    return ((lastTime.tv_sec - firstTime.tv_sec) * 1000) + (lastTime.tv_usec - firstTime.tv_usec) / 1000;
+
+// returns time of t in miliseconds
+time_t getTime(struct timeval t) {
+    return (t.tv_sec * 1000 + t.tv_usec / 1000);
 }
-bool timecmp(struct timeval t1, struct timeval t2, int sec) {
-    return ((t1.tv_sec - t2.tv_sec) * 1000 + (t1.tv_usec - t2.tv_usec) / 1000) > sec * 1000;
+
+time_t getUptime(struct timeval f, struct timeval l) {
+    return (((l.tv_sec - f.tv_sec) * 1000) + (l.tv_usec - f.tv_usec) / 1000);
+}
+
+// return Uptime in microseconds
+time_t sysUptime() {
+    return (((lastTime.tv_sec - firstTime.tv_sec) * 1000000) + (lastTime.tv_usec - firstTime.tv_usec) / 1);
+}
+bool timecmp(time_t t1, struct timeval t2, int sec) {
+    // printf("timecmp\nt1:%ld\nt2:%ld\ndiff:%ld\nsec:%ld\n", t1, t2, (t1 - t2), sec);
+    // printf("result:%d", (t1 - t2) / 1000 > sec);
+    return ((t1 - t2.tv_sec) / 1000) > sec;
 }
 
 /*** Koniec suboru f_time.c ***/

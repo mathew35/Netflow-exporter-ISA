@@ -33,6 +33,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     // create flow ID
     flow_id_t *flow_ID = malloc(sizeof(flow_id_t));
     flow_ID->ts = header->ts;
+    // printf("time:%s", asctime(gmtime(&header->ts.tv_sec)));
 
     struct ip *iphdr;
     iphdr = (struct ip *)(packet + header_length);
@@ -44,23 +45,26 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     struct udphdr *udphdr;
     struct icmphdr *icmphdr;
     int size_ip = iphdr->ip_hl * 4;
-    flow_ID->length = ntohs(iphdr->ip_len) - size_ip;
     switch (iphdr->ip_p) {
         case IPPROTO_TCP:
             tcphdr = (struct tcphdr *)(noHeadPacket + size_ip);
             flow_ID->src_port = tcphdr->th_sport;
             flow_ID->dst_port = tcphdr->th_dport;
             flow_ID->tcp_flags = tcphdr->th_flags;
+            flow_ID->length = ntohs(iphdr->ip_len) - size_ip;
             break;
 
         case IPPROTO_UDP:
             udphdr = (struct udphdr *)(noHeadPacket + size_ip);
             flow_ID->src_port = udphdr->source;
             flow_ID->dst_port = udphdr->dest;
+            flow_ID->tcp_flags = 0;
+            flow_ID->length = ntohs(udphdr->len) - iphdr->ip_hl * 1.5;
             break;
 
         case IPPROTO_ICMP:
             icmphdr = (struct icmphdr *)(noHeadPacket + size_ip);
+            flow_ID->length = 56;
             break;
 
         default:

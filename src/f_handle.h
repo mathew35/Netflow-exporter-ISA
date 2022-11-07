@@ -42,8 +42,8 @@ typedef struct flow {
     // 48B
     flow_id_t flow_id;
     int dPkts;
-    struct timeval first;
-    struct timeval last;
+    time_t first;
+    time_t last;
     int tcp_flags;
     int tos;
     int bytes;
