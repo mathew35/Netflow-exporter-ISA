@@ -11,6 +11,7 @@ FILES = f_time.o f_handle.o
 .PHONY: all clean zip
 
 all: flow $(FILES)
+	cd udp-client && make
 
 # univerzalne pravidlo pre preklad .c suborov na .o
 %.o: %.c

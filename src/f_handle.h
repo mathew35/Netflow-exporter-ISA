@@ -9,6 +9,8 @@
 #ifndef F_HANDLE_H
 #define F_HANDLE_H
 
+#define _GNU_SOURCE // for asprintf()
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +49,7 @@ typedef struct flow {
     int tcp_flags;
     int tos;
     int bytes;
+    int exportUptime;
 } flow_t;
 
 void initFlowArray();
