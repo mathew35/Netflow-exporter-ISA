@@ -11,6 +11,7 @@ char *ip = "127.0.0.1:2055";
 int active = 60;
 int export = 10;
 int flow_size = 1024;
+bool ipOK = false;
 
 flow_t **flow_cache;
 int flow_cnt = 0;
@@ -34,11 +35,12 @@ void freeFlows() {
     // free(flow_cache);
 }
 
-void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size) {
+void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size, bool gotIP) {
     ip = ip_addr;
     active = active_timer;
     export = inactive_timer;
     flow_size = flow_cache_size;
+    ipOK = gotIP;
 }
 
 void exportExpired() {
@@ -155,8 +157,16 @@ void exportExpired() {
     FILE *f = fopen("datafile", "wb");
     fwrite(data, sizeof(data), 1, f);
     fclose(f);
-    char *rest = strsep(&ip, ":");
-    printf("delmited %s and rest %s\n", ip, rest);
+    char *rest = "127.0.0.1";
+    if (ipOK) {
+        rest = strsep(&ip, ":");
+        // printf("delmited %s and rest %s\n", ip, rest);
+        if (ip == NULL) {
+            ip = "2055";
+        }
+    } else {
+        ip = "2055";
+    }
     char *udpcall;
     if (0 > asprintf(&udpcall, "udp-client/echo-udp-client2 %s %s %d < datafile", rest, ip, 24 + 48 * expired_cnt)) exit(6);
     FILE *fd = popen(udpcall, "r");

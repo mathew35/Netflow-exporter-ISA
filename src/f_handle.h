@@ -56,7 +56,7 @@ void initFlowArray();
 
 void freeFlows();
 
-void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size);
+void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size, bool gotIP);
 
 void exportFlow(flow_t *flow);
 

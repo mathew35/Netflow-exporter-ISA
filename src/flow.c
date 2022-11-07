@@ -14,6 +14,7 @@ int export_interval = 10;
 int flow_cache_size = 1024;
 int header_length = 0;
 struct hostent *host;
+bool gotIP = false;
 
 int total_packets = 0;
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
@@ -84,9 +85,7 @@ void argparse(int argc, char *argv[argc]) {
         }
         if (strcmp(argv[i], "-c") == 0) {
             ip_addr = argv[++i];
-            // host = gethostbyaddr(ip_addr, )
-            // gethostbyaddr()
-            // gethostbyname()
+            gotIP = true;
             continue;
         }
         if (strcmp(argv[i], "-a") == 0) {
@@ -118,14 +117,14 @@ void argparse(int argc, char *argv[argc]) {
 int main(int argc, char *argv[argc]) {
     argparse(argc, argv);
 
-    setVars(ip_addr, active_timer, export_interval, flow_cache_size);
+    setVars(ip_addr, active_timer, export_interval, flow_cache_size, gotIP);
     initFlowArray();
 
     // Constants print
-    printf("IP address/hostname: %s\n", ip_addr);
-    printf("Active timer: %d\n", active_timer);
-    printf("Export interval: %d\n", export_interval);
-    printf("Flow cache size: %d\n\n", flow_cache_size);
+    // printf("IP address/hostname: %s\n", ip_addr);
+    // printf("Active timer: %d\n", active_timer);
+    // printf("Export interval: %d\n", export_interval);
+    // printf("Flow cache size: %d\n\n", flow_cache_size);
     // Constants print - end
 
     // Init pcap
@@ -155,7 +154,7 @@ int main(int argc, char *argv[argc]) {
     exportFlowAll();
     freeFlows();
 
-    printf("Total packets: %d\n", total_packets);
+    // printf("Total packets: %d\n", total_packets);
     return 0;
 }
 
