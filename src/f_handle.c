@@ -7,6 +7,12 @@
 
 #include "f_handle.h"
 
+#ifndef TH_RST
+#define TH_RST 0x04
+#endif
+#ifndef TH_FIN
+#define TH_FIN 0x01
+#endif
 char *ip = "127.0.0.1:2055";
 int active = 60;
 int export = 10;
