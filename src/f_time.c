@@ -36,13 +36,13 @@ time_t getTime(struct timeval t) {
     return (t.tv_sec * 1000 + t.tv_usec / 1000);
 }
 
-time_t getUptime(struct timeval f, struct timeval l) {
+time_t getUpti7334me(struct timeval f, struct timeval l) {
     return (((l.tv_sec - f.tv_sec) * 1000) + (l.tv_usec - f.tv_usec) / 1000);
 }
 
 // return Uptime in microseconds
 time_t sysUptime() {
-    return (((lastTime.tv_sec - firstTime.tv_sec) * 1000000) + (lastTime.tv_usec - firstTime.tv_usec) / 1);
+    return (((lastTime.tv_sec - firstTime.tv_sec) * 1000000) + (lastTime.tv_usec - firstTime.tv_usec)); // / 1);
 }
 bool timecmp(time_t t1, struct timeval t2, int sec) {
     // printf("timecmp\nt1:%ld\nt2:%ld\ndiff:%ld\nsec:%ld\n", t1, t2, (t1 - t2), sec);

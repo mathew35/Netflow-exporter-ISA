@@ -66,6 +66,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
         case IPPROTO_ICMP:
             icmphdr = (struct icmphdr *)(noHeadPacket + size_ip);
             flow_ID->length = 56;
+            flow_ID->src_port = icmphdr->type;
+            flow_ID->dst_port = icmphdr->code;
             break;
 
         default:

@@ -224,7 +224,7 @@ void exportFlowAll() {
 }
 
 bool flowIDcmp(flow_id_t *f1, flow_id_t *f2) {
-    if (f1->prot == 1) {
+    if ((f1->prot == 1) || (f2->prot == 1)) {
         return false;
     }
     if (f1 != NULL && f2 != NULL)
@@ -253,7 +253,7 @@ void updateFlow(flow_id_t *flow_ID) {
     setLatest(flow_ID->ts);
     if (flow == NULL) {
         setFirst(flow_ID->ts);
-        if (flow_cnt == 1024) {
+        if (flow_cnt == flow_size) {
             // exportOldest();
             int fl_int = 0;
             flow_t *fl = flow_cache[fl_int];
@@ -279,7 +279,14 @@ void updateFlow(flow_id_t *flow_ID) {
         flow_cnt++;
         return;
     }
-
+    if ((flow->flow_id.tcp_flags & TH_FIN) || (flow->flow_id.tcp_flags & TH_RST)) {
+        exportFlow(flow_cache[fn]);
+        flow_cnt--;
+        flow_cache[fn] = flow_cache[flow_cnt];
+        flow_cache[flow_cnt] = NULL;
+        updateFlow(flow_ID);
+        return;
+    }
     if ((flow->last - flow->first) / 1000000 > active) {
         exportFlow(flow_cache[fn]);
         flow_cnt--;

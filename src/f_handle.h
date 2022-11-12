@@ -46,7 +46,6 @@ typedef struct flow {
     int dPkts;
     time_t first;
     time_t last;
-    int tcp_flags;
     int tos;
     int bytes;
     int exportUptime;
