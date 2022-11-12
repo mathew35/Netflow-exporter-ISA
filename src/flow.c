@@ -49,9 +49,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     switch (iphdr->ip_p) {
         case IPPROTO_TCP:
             tcphdr = (struct tcphdr *)(noHeadPacket + size_ip);
-            flow_ID->src_port = tcphdr->th_sport;
-            flow_ID->dst_port = tcphdr->th_dport;
-            flow_ID->tcp_flags = tcphdr->th_flags;
+            flow_ID->src_port = tcphdr->source;
+            flow_ID->dst_port = tcphdr->dest;
+            flow_ID->tcp_flags = (tcphdr->urg | tcphdr->ack | tcphdr->psh | tcphdr->rst | tcphdr->syn | tcphdr->fin);
             flow_ID->length = ntohs(iphdr->ip_len) - size_ip;
             break;
 
