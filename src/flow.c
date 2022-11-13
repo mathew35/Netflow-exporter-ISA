@@ -56,8 +56,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
         case IPPROTO_UDP:
             udphdr = (struct udphdr *)(noHeadPacket + size_ip);
-            flow_ID->src_port = udphdr->uh_sport;
-            flow_ID->dst_port = udphdr->uh_dport;
+            flow_ID->src_port = udphdr->source;
+            flow_ID->dst_port = udphdr->dest;
             flow_ID->tcp_flags = 0;
             flow_ID->length = ntohs(udphdr->len) - 4 * 2;
             break;
