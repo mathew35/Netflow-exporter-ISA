@@ -21,26 +21,24 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     total_packets++;
     struct ether_header *eptr;
     eptr = (struct ether_header *)packet;
-    switch (ntohs(eptr->ether_type)) {
-        case ETHERTYPE_IP:
-            break;
-        default:
-            return;
-    }
+    if (ntohs(eptr->ether_type) != ETHERTYPE_IP) return;
 
-    // packet without datalink layer header
     u_char *noHeadPacket = packet + header_length;
 
     // create flow ID
     flow_id_t *flow_ID = malloc(sizeof(flow_id_t));
+    if (flow_ID == NULL) {
+        printf("exited by flow_ID=NULL\n");
+        exit(5);
+    }
     flow_ID->ts = header->ts;
-    // printf("time:%s", asctime(gmtime(&header->ts.tv_sec)));
 
     struct ip *iphdr;
-    iphdr = (struct ip *)(packet + header_length);
+    iphdr = (struct ip *)(noHeadPacket);
     flow_ID->src_ip = ntohl(iphdr->ip_src.s_addr);
     flow_ID->dst_ip = ntohl(iphdr->ip_dst.s_addr);
     flow_ID->prot = iphdr->ip_p;
+    flow_ID->tos = iphdr->ip_tos;
 
     struct tcphdr *tcphdr;
     struct udphdr *udphdr;
@@ -49,30 +47,34 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     switch (iphdr->ip_p) {
         case IPPROTO_TCP:
             tcphdr = (struct tcphdr *)(noHeadPacket + size_ip);
-            flow_ID->src_port = tcphdr->source;
-            flow_ID->dst_port = tcphdr->dest;
-            flow_ID->tcp_flags = (tcphdr->urg | tcphdr->ack | tcphdr->psh | tcphdr->rst | tcphdr->syn | tcphdr->fin);
+            flow_ID->src_port = tcphdr->th_sport;
+            flow_ID->dst_port = tcphdr->th_dport;
+            flow_ID->tcp_flags = tcphdr->th_flags;
             flow_ID->length = ntohs(iphdr->ip_len) - size_ip;
             break;
 
         case IPPROTO_UDP:
             udphdr = (struct udphdr *)(noHeadPacket + size_ip);
-            flow_ID->src_port = udphdr->source;
-            flow_ID->dst_port = udphdr->dest;
+            flow_ID->src_port = udphdr->uh_sport;
+            flow_ID->dst_port = udphdr->uh_sport;
             flow_ID->tcp_flags = 0;
-            flow_ID->length = ntohs(udphdr->len) - iphdr->ip_hl * 1.5;
+            flow_ID->length = ntohs(udphdr->len) - 4 * 2;
             break;
 
         case IPPROTO_ICMP:
             icmphdr = (struct icmphdr *)(noHeadPacket + size_ip);
-            flow_ID->length = 56;
+            flow_ID->length = (ntohs(iphdr->ip_len) - size_ip - 8);
             flow_ID->src_port = icmphdr->type;
             flow_ID->dst_port = icmphdr->code;
+            flow_ID->tcp_flags = 0;
             break;
 
         default:
+            printf("unknown prot:%d\n", iphdr->ip_p);
+            return;
             break;
     }
+    printf("packet no.%d\n", total_packets);
     updateFlow(flow_ID);
     free(flow_ID);
 }
@@ -100,6 +102,7 @@ void argparse(int argc, char *argv[argc]) {
         }
         if (strcmp(argv[i], "-m") == 0) {
             flow_cache_size = atoi(argv[++i]);
+            if (flow_cache_size < 1) flow_cache_size = 1;
             continue;
         }
         if (strcmp(argv[i], "-h") == 0) {

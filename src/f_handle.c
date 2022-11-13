@@ -7,12 +7,6 @@
 
 #include "f_handle.h"
 
-#ifndef TH_RST
-#define TH_RST 0x04
-#endif
-#ifndef TH_FIN
-#define TH_FIN 0x01
-#endif
 char *ip = "127.0.0.1:2055";
 int active = 60;
 int export = 10;
@@ -28,17 +22,11 @@ uint32_t all_flows_cnt = 0;
 void initFlowArray() {
     flow_cache = malloc(sizeof(flow_t *) * flow_size);
     expiredFlows = malloc(sizeof(flow_t *) * 30);
-    // for (int i = 0; i < 30; i++) {
-    //     expiredFlows[i] = malloc(sizeof(flow_t));
-    // }
 }
 
 void freeFlows() {
-    // for (int i = 0; i < 30; i++) {
-    //     free(expiredFlows[i]);
-    // }
     free(expiredFlows);
-    // free(flow_cache);
+    free(flow_cache);
 }
 
 void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size, bool gotIP) {
@@ -52,7 +40,6 @@ void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache
 void exportExpired() {
     unsigned char header[24];
     unsigned char data[24 + 48 * expired_cnt];
-    // uint32_t sysT = sysTime().tv_sec + sysTime().tv_usec/1000000;
     // version
     header[0] = 0x00;
     header[1] = 0x05;
@@ -142,7 +129,7 @@ void exportExpired() {
         // 38 prot
         record[38] = expiredFlows[i]->flow_id.prot;
         // 39 tos
-        record[39] = expiredFlows[i]->tos;
+        record[39] = expiredFlows[i]->flow_id.tos;
         // 40-47 000000
         record[40] = 0;
         record[41] = 0;
@@ -166,7 +153,6 @@ void exportExpired() {
     char *rest = "127.0.0.1";
     if (ipOK) {
         rest = strsep(&ip, ":");
-        // printf("delmited %s and rest %s\n", ip, rest);
         if (ip == NULL) {
             ip = "2055";
         }
@@ -183,37 +169,13 @@ void exportExpired() {
 }
 
 void exportFlow(flow_t *flow) {
-    // time_t secs = sysTime().tv_sec;
-    // time_t nsecs = sysTime().tv_usec;
-    // time_t curr = secs + nsecs / 1000000;
-    // time_t first = curr - sysUptime() / 1000000 + flow->first / 1000; // flow->first.tv_sec + flow->first.tv_usec / 1000000;
-    // time_t last = curr - sysUptime() / 1000000 + flow->last / 1000;   // flow->last.tv_sec + flow->last.tv_usec / 1000000;
-    // printf("\n");
-    // printf("number of packets:%d\n", flow->dPkts);
-    // printf("Bytes:%d\n", flow->bytes);
-    // printf("num in first:%ld\n", first); // flow->first.tv_sec);
-    // printf("num in last:%ld\n", last);   // flow->last.tv_sec);
-    // printf("First time: %s", asctime(gmtime(&first)));
-    // printf("Last time: %s", asctime(gmtime(&last)));
-    // printf("src port: %u\n", ntohs(flow->flow_id.src_port));
-    // printf("dst port: %u\n", ntohs(flow->flow_id.dst_port));
-    // printf("protocol (6 = TCP, 1 = ICMP 17 = UDP): %d\n", flow->flow_id.prot);
-
-    // real export
-    if (sysUptime() - flow->last > flow->last / 1000 + export * 1000) {
-        flow->exportUptime = flow->last / 1000 + export * 1000;
-    } else {
-        flow->exportUptime = (sysUptime() - flow->last) / 1000;
-    }
     if (expired_cnt < 30) {
         expiredFlows[expired_cnt] = flow;
-        // expiredFlows[expired_cnt] = flow;
         expired_cnt++;
         return;
     }
     exportExpired();
     expiredFlows[expired_cnt] = flow;
-    // expiredFlows[expired_cnt] = flow;
     expired_cnt++;
 }
 
@@ -227,6 +189,7 @@ void exportFlowAll() {
     exportExpired();
     free(flow_cache);
     flow_cache = NULL;
+    printf("Flow_cnt: %d\n", flow_cnt);
 }
 
 bool flowIDcmp(flow_id_t *f1, flow_id_t *f2) {
@@ -238,15 +201,12 @@ bool flowIDcmp(flow_id_t *f1, flow_id_t *f2) {
             if (f1->src_ip == f2->src_ip)
                 if (f1->src_port == f2->src_port)
                     if (f1->dst_port == f2->dst_port)
-                        if (f1->prot == f2->prot) return true;
+                        if (f1->prot == f2->prot)
+                            if (f1->tos == f2->tos) return true;
     return false;
 }
 
 void updateFlow(flow_id_t *flow_ID) {
-    if (flow_ID == NULL) {
-        printf("exited by flow_ID=NULL\n");
-        exit(5);
-    }
     flow_t *flow = NULL;
     int fn = 0;
     for (int i = 0; i < flow_cnt; i++) {
@@ -270,9 +230,8 @@ void updateFlow(flow_id_t *flow_ID) {
                 }
             }
             exportFlow(fl);
-            flow_cache[fl_int] = flow_cache[1023];
-            flow_cache[1023] = NULL;
-            printf("\nflow_cnt=30!!!!");
+            flow_cache[fl_int] = flow_cache[flow_size - 1];
+            flow_cache[flow_size - 1] = NULL;
             flow_cnt--;
         }
         flow_t *newFlow = malloc(sizeof(flow_t));
@@ -293,7 +252,7 @@ void updateFlow(flow_id_t *flow_ID) {
         updateFlow(flow_ID);
         return;
     }
-    if ((flow->last - flow->first) / 1000000 > active) {
+    if ((flow->last - flow->first) >= active * 1000000) {
         exportFlow(flow_cache[fn]);
         flow_cnt--;
         flow_cache[fn] = flow_cache[flow_cnt];
@@ -301,7 +260,7 @@ void updateFlow(flow_id_t *flow_ID) {
         updateFlow(flow_ID);
         return;
     }
-    if ((sysUptime() - flow->last) / 1000000 > export) {
+    if ((sysUptime() - flow->last) >= export * 1000000) {
         exportFlow(flow_cache[fn]);
         flow_cnt--;
         flow_cache[fn] = flow_cache[flow_cnt];
@@ -315,6 +274,7 @@ void updateFlow(flow_id_t *flow_ID) {
     flow->dPkts++;
     flow->last = sysUptime();
     flow = NULL;
+    printf("Flow_cnt: %d\n", flow_cnt);
 }
 
 /*** Koniec suboru f_handle.c ***/

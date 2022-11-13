@@ -4,10 +4,10 @@ CFLAGS+=-DUSE_SLEEP
 SRC=$(wildcard *.c)
 PROGS=$(patsubst %.c,%,$(SRC))
 
+all: $(PROGS)
+
 %.o: %.c
 	$(GCC) $(CFLAGS+) $< -o $@
-
-all: $(PROGS)
 
 clean:	
 	rm -f *.core $(PROGS) *~

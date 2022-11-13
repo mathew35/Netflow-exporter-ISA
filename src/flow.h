@@ -8,6 +8,7 @@
 // Header Guard
 #ifndef FLOW_H
 #define FLOW_H
+#define __FAVOR_BSD
 
 #include <pcap.h>
 #include <stdio.h>

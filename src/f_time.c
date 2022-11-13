@@ -31,9 +31,9 @@ void setFirst(struct timeval time) {
     }
 }
 
-// returns time of t in miliseconds
+// returns time of t in microseconds
 time_t getTime(struct timeval t) {
-    return (t.tv_sec * 1000 + t.tv_usec / 1000);
+    return (t.tv_sec * 1000000 + t.tv_usec);
 }
 
 time_t getUpti7334me(struct timeval f, struct timeval l) {
