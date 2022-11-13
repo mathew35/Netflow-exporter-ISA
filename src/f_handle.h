@@ -10,6 +10,12 @@
 #define F_HANDLE_H
 
 #define _GNU_SOURCE // for asprintf()
+#ifndef TH_FIN
+#define TH_FIN 0x01
+#endif
+#ifndef TH_RST
+#define TH_RST 0x04
+#endif
 
 #include <stdbool.h>
 #include <stdio.h>

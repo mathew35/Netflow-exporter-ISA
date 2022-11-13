@@ -19,6 +19,7 @@ bool gotIP = false;
 int total_packets = 0;
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
     total_packets++;
+    printf("packet no.%d\n", total_packets);
     struct ether_header *eptr;
     eptr = (struct ether_header *)packet;
     if (ntohs(eptr->ether_type) != ETHERTYPE_IP) return;
@@ -47,16 +48,16 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     switch (iphdr->ip_p) {
         case IPPROTO_TCP:
             tcphdr = (struct tcphdr *)(noHeadPacket + size_ip);
-            flow_ID->src_port = tcphdr->th_sport;
-            flow_ID->dst_port = tcphdr->th_dport;
-            flow_ID->tcp_flags = tcphdr->th_flags;
+            flow_ID->src_port = tcphdr->source;
+            flow_ID->dst_port = tcphdr->dest;
+            flow_ID->tcp_flags = (tcphdr->fin | tcphdr->syn << 1 | tcphdr->rst << 2 | tcphdr->psh << 3 | tcphdr->ack << 4 | tcphdr->urg << 5);
             flow_ID->length = ntohs(iphdr->ip_len) - size_ip;
             break;
 
         case IPPROTO_UDP:
             udphdr = (struct udphdr *)(noHeadPacket + size_ip);
             flow_ID->src_port = udphdr->uh_sport;
-            flow_ID->dst_port = udphdr->uh_sport;
+            flow_ID->dst_port = udphdr->uh_dport;
             flow_ID->tcp_flags = 0;
             flow_ID->length = ntohs(udphdr->len) - 4 * 2;
             break;
