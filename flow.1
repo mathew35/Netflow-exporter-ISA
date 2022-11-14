@@ -1,0 +1,29 @@
+.TH FLOW 1
+.SH NAME
+flow \- exportuj toky zo zadaneho suboru alebo STDIN
+.SH SYNOPSIS
+[\fB\-f\fR \fIFILE\fR]
+[\fB\-c\fR \fIADDRESS:PORT\fR]
+[\fB\-a\fR \fISECONDS\fR]
+[\fB\-i\fR \fISECONDS\fR]
+[\fB\-m\fR \fICOUNT\fR]
+.SH DESCRIPTION
+.B flow
+exportuje toky zo zachytenej sietovej komunikacie zo suboru alebo STDIN na NetFlow kolektor. Pakety na vstupe sa spracovavaju postupne. Export nastava len v pripade ze je 30 expirovanych tokov alebo sa docitali vsetky pakety zo vstupu a exportuju sa toky z expirovanych tokov ktore sa este neexportovali.
+.SH OPTIONS
+Vsetky prepinace su nepovinne.
+.TP
+.BR \-f\fR
+Vstupny subor (Predvolena hodnota STDIN)
+.TP
+.BR \-c\fR
+IP alebo hostname adresa NetFlow kolektora, port je volitelny (Predvolena hodnota localhost:2055)
+.TP
+.BR \-a\fR
+interval v sekundach, ktory ked uplynie tak sa dany aktivny tok povazuje za expirovany (Predvolena hodnota 60)
+.TP
+.BR \-i\fR
+interval v sekundach, ktory ked uplynie tak sa dany neaktivny tok povazuje za expirovany (Predvolena hodnota 10)
+.TP
+.BR \-m\fR
+velkost cache tokov. Pri dosiahnuti max. velkosti sa expiruje najstarsi zaznam v cache-i (Predvolena hodnota 1024)

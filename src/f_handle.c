@@ -11,7 +11,6 @@ char *ip = "127.0.0.1:2055";
 int active = 60;
 int export = 10;
 int flow_size = 1024;
-bool ipOK = false;
 
 flow_t **flow_cache;
 int flow_cnt = 0;
@@ -29,12 +28,11 @@ void freeFlows() {
     free(flow_cache);
 }
 
-void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size, bool gotIP) {
+void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size) {
     ip = ip_addr;
     active = active_timer;
     export = inactive_timer;
     flow_size = flow_cache_size;
-    ipOK = gotIP;
 }
 
 void exportExpired() {
@@ -143,27 +141,12 @@ void exportExpired() {
         for (int j = 24 + 48 * i; j < 24 + 48 * (i + 1); j++, k++) {
             data[j] = record[k];
         }
-        // fwrite(record, sizeof(record), 1, f);
         free(expiredFlows[i]);
         expiredFlows[i] = NULL;
     }
-    FILE *f = fopen("datafile", "wb");
-    fwrite(data, sizeof(data), 1, f);
-    fclose(f);
-    char *rest = "127.0.0.1";
-    if (ipOK) {
-        rest = strsep(&ip, ":");
-        if (ip == NULL) {
-            ip = "2055";
-        }
-    } else {
-        ip = "2055";
-    }
-    char *udpcall;
-    if (0 > asprintf(&udpcall, "udp-client/echo-udp-client2 %s %s %d < datafile", rest, ip, 24 + 48 * expired_cnt)) exit(6);
-    FILE *fd = popen(udpcall, "r");
-    free(udpcall);
-    pclose(fd);
+
+    sendUdp(data, sizeof(data));
+
     all_flows_cnt += expired_cnt;
     expired_cnt = 0;
 }
@@ -180,9 +163,7 @@ void exportFlow(flow_t *flow) {
 }
 
 void exportFlowAll() {
-    // printf("Exporting all flows!\n");
     for (int i = 0; i < flow_cnt; i++) {
-        // printf("\nflow no.%d", i);
         exportFlow(flow_cache[i]);
         flow_cache[i] = NULL;
     }
@@ -193,9 +174,6 @@ void exportFlowAll() {
 }
 
 bool flowIDcmp(flow_id_t *f1, flow_id_t *f2) {
-    if ((f1->prot == 1) || (f2->prot == 1)) {
-        return false;
-    }
     if (f1 != NULL && f2 != NULL)
         if (f1->dst_ip == f2->dst_ip)
             if (f1->src_ip == f2->src_ip)
@@ -220,7 +198,7 @@ void updateFlow(flow_id_t *flow_ID) {
     if (flow == NULL) {
         setFirst(flow_ID->ts);
         if (flow_cnt == flow_size) {
-            // exportOldest();
+            // exportOldest
             int fl_int = 0;
             flow_t *fl = flow_cache[fl_int];
             for (int i = 1; i < flow_cnt; i++) {
@@ -274,7 +252,6 @@ void updateFlow(flow_id_t *flow_ID) {
     flow->dPkts++;
     flow->last = sysUptime();
     flow = NULL;
-    printf("Flow_cnt: %d\n", flow_cnt);
 }
 
 /*** Koniec suboru f_handle.c ***/

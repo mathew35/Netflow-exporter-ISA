@@ -8,18 +8,17 @@
 #include "flow.h"
 
 FILE *f;
-char *ip_addr = "127.0.0.1:2055";
+char *ip_addr = "127.0.0.1";
+char *port = "2055";
 int active_timer = 60;
 int export_interval = 10;
 int flow_cache_size = 1024;
 int header_length = 0;
 struct hostent *host;
-bool gotIP = false;
 
 int total_packets = 0;
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
     total_packets++;
-    printf("packet no.%d\n", total_packets);
     struct ether_header *eptr;
     eptr = (struct ether_header *)packet;
     if (ntohs(eptr->ether_type) != ETHERTYPE_IP) return;
@@ -75,7 +74,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
             return;
             break;
     }
-    printf("packet no.%d\n", total_packets);
     updateFlow(flow_ID);
     free(flow_ID);
 }
@@ -89,8 +87,12 @@ void argparse(int argc, char *argv[argc]) {
             continue;
         }
         if (strcmp(argv[i], "-c") == 0) {
-            ip_addr = argv[++i];
-            gotIP = true;
+            char *ip = argv[++i];
+            // separate address and port
+            ip_addr = strsep(&ip, ":");
+            if (ip != NULL) {
+                port = ip;
+            }
             continue;
         }
         if (strcmp(argv[i], "-a") == 0) {
@@ -123,15 +125,9 @@ void argparse(int argc, char *argv[argc]) {
 int main(int argc, char *argv[argc]) {
     argparse(argc, argv);
 
-    setVars(ip_addr, active_timer, export_interval, flow_cache_size, gotIP);
+    openSocket(ip_addr, port);
+    setVars(ip_addr, active_timer, export_interval, flow_cache_size);
     initFlowArray();
-
-    // Constants print
-    // printf("IP address/hostname: %s\n", ip_addr);
-    // printf("Active timer: %d\n", active_timer);
-    // printf("Export interval: %d\n", export_interval);
-    // printf("Flow cache size: %d\n\n", flow_cache_size);
-    // Constants print - end
 
     // Init pcap
     pcap_t *packetHandler = pcap_fopen_offline(f, "r");
@@ -159,6 +155,7 @@ int main(int argc, char *argv[argc]) {
     pcap_close(packetHandler);
     exportFlowAll();
     freeFlows();
+    closeSocket();
 
     // printf("Total packets: %d\n", total_packets);
     return 0;

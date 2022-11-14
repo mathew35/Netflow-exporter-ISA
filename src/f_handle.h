@@ -31,6 +31,7 @@
 #include <netinet/udp.h>
 
 #include "f_time.h"
+#include "f_udp.h"
 
 typedef struct flow_id {
     uint32_t src_ip;
@@ -59,7 +60,7 @@ void initFlowArray();
 
 void freeFlows();
 
-void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size, bool gotIP);
+void setVars(char *ip_addr, int active_timer, int inactive_timer, int flow_cache_size);
 
 void exportFlow(flow_t *flow);
 

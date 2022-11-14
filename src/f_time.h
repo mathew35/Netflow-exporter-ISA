@@ -20,12 +20,7 @@ void setLatest(struct timeval time);
 
 void setFirst(struct timeval time);
 
-time_t getTime(struct timeval t);
-
-time_t getUptime(struct timeval f, struct timeval l);
-
 time_t sysUptime();
 
-bool timecmp(time_t t1, struct timeval t2, int sec);
 #endif
 /*** Koniec suboru f_time.h ***/

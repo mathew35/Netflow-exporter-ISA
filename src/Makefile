@@ -7,11 +7,10 @@ FLAGS = 	-g -pedantic -Wall -Wextra -lpcap
 OTHER_FLAGS = -c
 EXE_FILES = flow 
 ZIP_NAME = xvrabl05
-FILES = f_time.o f_handle.o
+FILES = f_time.o f_handle.o f_udp.o
 .PHONY: all clean zip
 
 all: flow $(FILES)
-	cd udp-client && make
 
 # univerzalne pravidlo pre preklad .c suborov na .o
 %.o: %.c

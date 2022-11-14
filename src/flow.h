@@ -17,6 +17,7 @@
 
 #include "f_handle.h"
 #include "f_time.h"
+#include "f_udp.h"
 
 #endif
 /*** Koniec suboru <nazov_suboru>.{c,h} ***/
