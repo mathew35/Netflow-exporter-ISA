@@ -170,7 +170,6 @@ void exportFlowAll() {
     exportExpired();
     free(flow_cache);
     flow_cache = NULL;
-    printf("Flow_cnt: %d\n", flow_cnt);
 }
 
 bool flowIDcmp(flow_id_t *f1, flow_id_t *f2) {

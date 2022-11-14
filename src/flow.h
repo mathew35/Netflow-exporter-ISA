@@ -1,6 +1,6 @@
 /**
  * ISA
- * @file flow.c
+ * @file flow.h
  * @authors Matus Vrablik (xvrab05)
  * @brief NetFlow exporter
  */
@@ -20,4 +20,4 @@
 #include "f_udp.h"
 
 #endif
-/*** Koniec suboru <nazov_suboru>.{c,h} ***/
+/*** Koniec suboru flow.h ***/
